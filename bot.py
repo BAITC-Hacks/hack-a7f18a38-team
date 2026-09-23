@@ -27,7 +27,7 @@ def _load_local_env():
 
 def build_bot(profiles):
     from telegram import ReplyKeyboardMarkup, Update
-    from telegram.ext import Application, CommandHandler, ContextTypes, ConversationHandler, MessageHandler, filters
+    from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
 
     options = catalog_options(profiles)
 
@@ -133,7 +133,7 @@ def build_bot(profiles):
             return await ask(update, context, "budget")
         if step == "budget":
             try:
-                amount = int(text.replace(" ", "").replace("\u00a0", "").replace("₸", ""))
+                amount = int("".join(text.replace("₸", "").split()))
                 if amount <= 0 or amount > 1_000_000_000:
                     raise ValueError
             except ValueError:
@@ -144,7 +144,8 @@ def build_bot(profiles):
             return await results(update, context)
         if step == "duration":
             try:
-                hours = None if text in (SKIP, "/skip") else int(text)
+                command = text.split()[0].split("@", 1)[0].casefold() if text else ""
+                hours = None if text == SKIP or command == "/skip" else int(text)
                 if hours is not None and not 1 <= hours <= 1000:
                     raise ValueError
             except ValueError:
@@ -172,15 +173,18 @@ def build_bot(profiles):
         print(f"Бот подключён: @{app.bot.username}", flush=True)
 
     app = Application.builder().token(os.environ["TELEGRAM_BOT_TOKEN"]).concurrent_updates(False).post_init(setup).build()
-    private_text = filters.ChatType.PRIVATE & filters.TEXT & ~filters.COMMAND
+    # Only new private messages may change an order. Edited messages have no
+    # update.message, and context.user_data is shared with the same user's groups.
+    private_message = filters.ChatType.PRIVATE & filters.UpdateType.MESSAGE
+    private_text = private_message & filters.TEXT & ~filters.COMMAND
     conversation = ConversationHandler(
-        entry_points=[CommandHandler("start", start, filters.ChatType.PRIVATE), MessageHandler(private_text & filters.Regex("^" + NEW + "$"), start)],
-        states={value: [MessageHandler(private_text, handle)] + ([CommandHandler("skip", handle)] if key == "duration" else []) for key, value in STATES.items()},
-        fallbacks=[CommandHandler("cancel", cancel), CommandHandler("help", help_message)], allow_reentry=True,
+        entry_points=[CommandHandler("start", start, private_message), MessageHandler(private_text & filters.Regex("^" + NEW + "$"), start)],
+        states={value: [MessageHandler(private_text, handle)] + ([CommandHandler("skip", handle, private_message)] if key == "duration" else []) for key, value in STATES.items()},
+        fallbacks=[CommandHandler("cancel", cancel, private_message), CommandHandler("help", help_message, private_message)], allow_reentry=True,
     )
     app.add_handler(conversation)
-    app.add_handler(CommandHandler("cancel", cancel))
-    app.add_handler(MessageHandler(filters.ALL, help_message))
+    app.add_handler(CommandHandler("cancel", cancel, private_message))
+    app.add_handler(MessageHandler(private_message, help_message))
     app.add_error_handler(error)
     return app
 
