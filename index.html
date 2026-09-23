@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HackAlem — люди для вашего события</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="catalog-data.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="header wrap">
+    <a class="brand" href="index.html" aria-label="HackAlem, главная"><span class="brand-mark">h.</span>HackAlem<span class="brand-dot">●</span></a>
+    <nav aria-label="Основная навигация"><a href="#catalog">Каталог</a><a href="#about">О базе</a><a class="telegram" href="https://t.me/hackaton_Bags_bot" target="_blank" rel="noopener">Открыть бота <span>↗</span></a></nav>
+  </header>
+  <main>
+    <section class="hero wrap">
+      <div class="hero-copy"><p class="eyebrow"><span></span> БОЛЬШИЕ СОБЫТИЯ НАЧИНАЮТСЯ С ЛЮДЕЙ</p><h1>Ваше событие.<br>Ваша <em>команда.</em></h1><p class="intro">Фотограф, ведущий или целый ансамбль —<br class="desktop"> найдите тех, кто подходит вашему замыслу и бюджету.</p><a class="primary" href="#catalog">Собрать команду <span>↓</span></a></div>
+      <div class="hero-art" aria-hidden="true"><div class="art-orbit"></div><div class="art-ticket"><span>ПОВОД БЫТЬ ВМЕСТЕ</span><strong>Всё<br>сложится<span>✳</span></strong><div class="ticket-line"></div><div class="ticket-bottom">ВАША ИДЕЯ / НАША КОМАНДА <span>↗</span></div></div><div class="art-sticker">начнём<br>с хороших<br>людей ↗</div></div>
+    </section>
+    <section class="stats wrap" aria-label="О каталоге"><div><strong id="total">66</strong><span>анкет в каталоге</span></div><div><strong id="category-count">17</strong><span>категорий для события</span></div><div class="stat-note"><span class="small-star">✳</span><p>Всё в одном месте.<br><b>От идеи до подходящих вариантов.</b></p></div></section>
+    <section class="catalog-section wrap" id="catalog">
+      <div class="section-heading"><div><p class="eyebrow">НАЙДИТЕ СВОИХ</p><h2>Кто нужен вашему событию?</h2></div><p>Выберите параметры.<br>Оставьте остальное нам.</p></div>
+      <div class="catalog-layout">
+        <aside class="filters"><div class="filter-title"><h3>Ваше мероприятие</h3><button type="button" class="text-button" id="reset">Сбросить</button></div>
+          <form id="filters">
+            <label>Город<select id="city"><option value="">Любой город</option></select></label>
+            <label>Формат<select id="format"><option value="">Любой формат</option></select></label>
+            <label>Категория<select id="category"><option value="">Все категории</option></select></label>
+            <label>Бюджет до, ₸<input id="budget" type="number" min="1" max="1000000000" step="1" placeholder="Например, 500 000"></label>
+            <label>Дата события<input id="date" type="date" min="2026-09-23" max="2026-12-31" aria-describedby="date-hint"></label>
+            <small id="date-hint">Календарь: 23.09–31.12.2026.<br>Без даты занятость не проверяется.</small>
+            <details class="extra"><summary>Дополнительные параметры</summary><label>Язык<select id="language"><option value="">Любой язык</option></select></label><label>Длительность, ч.<input id="duration" type="number" min="1" max="1000" step="1" placeholder="Не важно"></label></details>
+          </form>
+          <div class="filter-help"><span>↗</span><p>Удобнее в Telegram?<br><a href="https://t.me/hackaton_Bags_bot" target="_blank" rel="noopener">Пройдите подбор в боте</a></p></div>
+        </aside>
+        <div class="catalog-main"><div class="search-bar"><label class="search"><span aria-hidden="true">⌕</span><input type="search" id="search" placeholder="Имя, направление или ключевое слово" aria-label="Поиск по каталогу"></label></div><div class="results-toolbar"><p id="count" role="status" aria-live="polite"></p><label class="sort">Порядок<select id="sort"><option value="price">Сначала дешевле</option><option value="name">По имени</option></select></label></div><div id="filter-error" role="alert" hidden></div><div class="cards" id="cards"></div><div class="empty" id="empty" hidden><span>⌕</span><h3>Пока не нашлось совпадений</h3><p>Попробуйте увеличить бюджет или изменить дату.<br>Можно сбросить фильтры и посмотреть все анкеты.</p><button class="primary" id="empty-reset">Посмотреть весь каталог</button></div><button class="load-more" id="more">Показать ещё 12 ↓</button></div>
+      </div>
+    </section>
+    <section class="about wrap" id="about"><div><p class="eyebrow">ПРОЗРАЧНО О ДАННЫХ</p><h2>Подбор начинается<br>со знакомства.</h2></div><div><p>Это анонимизированная база хакатона. Имена заменены, контакты отсутствуют. В каталоге есть синтетические анкеты — они отмечены в карточках.</p><p>Цены указаны «от». Пометка «Оценочная цена» означает, что значение добавили при подготовке базы. Такие же пояснения сохранены для городов.</p><p>Расписание охватывает 23 сентября — 31 декабря 2026 года. Совпадение по фильтрам не подтверждает бронирование или окончательную стоимость.</p><a href="data/original-preview.html">Открыть исходный обзор ↗</a></div></section>
+  </main>
+  <footer class="wrap"><a class="brand" href="#">HackAlem<span class="brand-dot">●</span></a><p>Собираем людей. Создаём события.</p><span>Проект команды «Багоделы»</span></footer>
+  <dialog id="profile-dialog"><button class="close" aria-label="Закрыть анкету">×</button><div id="profile-content"></div></dialog>
+</body>
+</html>
