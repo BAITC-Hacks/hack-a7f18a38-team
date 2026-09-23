@@ -1,0 +1,9 @@
+[
+  {"id":"photo-1","name":"Демо Фотограф 1","city":"Алматы","category":"Фотограф","formats":["свадьба","корпоратив","день рождения"],"languages":["русский","казахский"],"price_kzt":150000,"max_hours":6,"busy_dates":["2026-10-10"],"demo":true},
+  {"id":"photo-2","name":"Демо Фотограф 2","city":"Алматы","category":"Фотограф","formats":["свадьба","корпоратив"],"languages":["русский"],"price_kzt":200000,"max_hours":8,"busy_dates":["2026-10-17"],"demo":true},
+  {"id":"photo-3","name":"Демо Фотограф 3","city":"Алматы","category":"Фотограф","formats":["свадьба","день рождения"],"languages":["русский","казахский"],"price_kzt":250000,"max_hours":10,"busy_dates":[],"demo":true},
+  {"id":"photo-4","name":"Демо Фотограф 4","city":"Алматы","category":"Фотограф","formats":["свадьба","корпоратив"],"languages":["русский","английский"],"price_kzt":300000,"max_hours":12,"busy_dates":[],"demo":true},
+  {"id":"booth-1","name":"Демо Фотобудка","city":"Алматы","category":"Фото и видеобудки","formats":["свадьба","корпоратив","день рождения"],"languages":["русский","казахский"],"price_kzt":100000,"max_hours":5,"busy_dates":[],"demo":true},
+  {"id":"host-1","name":"Демо Ведущий","city":"Алматы","category":"Ведущий","formats":["свадьба","корпоратив","день рождения"],"languages":["русский","казахский"],"price_kzt":250000,"max_hours":6,"busy_dates":[],"demo":true},
+  {"id":"astana-1","name":"Демо Фотограф Астана","city":"Астана","category":"Фотограф","formats":["свадьба","корпоратив","день рождения"],"languages":["русский","казахский"],"price_kzt":180000,"max_hours":8,"busy_dates":[],"demo":true}
+]

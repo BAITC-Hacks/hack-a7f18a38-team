@@ -19,7 +19,7 @@ def _load_local_env() -> None:
     env_path = ROOT / ".env"
     if not env_path.exists():
         return
-    for line in env_path.read_text(encoding="utf-8").splitlines():
+    for line in env_path.read_text(encoding="utf-8-sig").splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
@@ -85,7 +85,8 @@ def build_bot(profiles: list[dict[str, str]]):
 
     async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         context.user_data.clear()
-        await update.message.reply_text("Подберу до трёх подрядчиков из каталога. Выберите город:", reply_markup=keyboard(options["cities"]))
+        notice = "В каталоге есть учебные карточки с пометкой ДЕМО.\n" if any(p.get("demo") for p in profiles) else ""
+        await update.message.reply_text(notice + "Подберу до трёх подрядчиков из каталога. Выберите город:", reply_markup=keyboard(options["cities"]))
         return STATES["city"]
 
     async def city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -104,10 +105,11 @@ def build_bot(profiles: list[dict[str, str]]):
             parsed = date.fromisoformat(value)
             if parsed.isoformat() != value:
                 raise ValueError
-            # Let the matcher report the precise supported calendar window.
-            recommend(Request(context.user_data["city"], value, options["formats"][0], options["categories"][0], 0), profiles)
-        except ValueError as exc:
-            await update.message.reply_text(f"{exc}\nПопробуйте снова в формате ГГГГ-ММ-ДД:")
+            if parsed < date.today():
+                await update.message.reply_text("Эта дата уже прошла. Введите сегодняшнюю или будущую дату:")
+                return STATES["date"]
+        except ValueError:
+            await update.message.reply_text("Введите существующую дату в формате ГГГГ-ММ-ДД:")
             return STATES["date"]
         context.user_data["event_date"] = value
         await update.message.reply_text("Выберите тип мероприятия:", reply_markup=keyboard(options["formats"]))
@@ -196,13 +198,36 @@ def build_bot(profiles: list[dict[str, str]]):
         fallbacks=[CommandHandler("cancel", cancel)],
         allow_reentry=True,
     )
-    application = Application.builder().token(os.environ["TELEGRAM_BOT_TOKEN"]).build()
+    async def help_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if update.effective_message:
+            await update.effective_message.reply_text("/start — начать подбор заново\n/cancel — отменить подбор\n/skip — пропустить длительность\n/help — помощь")
+
+    async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE):
+        # Do not log exception strings: request URLs may include the token.
+        logging.error("Ошибка обработки: %s", type(context.error).__name__)
+        if isinstance(update, Update) and update.effective_message:
+            await update.effective_message.reply_text("Не удалось обработать запрос. Начните заново: /start")
+
+    async def setup_commands(application):
+        await application.bot.set_my_commands([
+            ("start", "Подобрать подрядчика"), ("cancel", "Отменить подбор"), ("help", "Помощь"),
+        ])
+
+    application = Application.builder().token(os.environ["TELEGRAM_BOT_TOKEN"]).concurrent_updates(False).post_init(setup_commands).build()
     application.add_handler(conversation)
+    application.add_handler(CommandHandler("help", help_message))
+    application.add_handler(CommandHandler("cancel", cancel))
+    application.add_handler(MessageHandler(filters.ALL, help_message))
+    application.add_error_handler(on_error)
     return application
 
 
 def main() -> int:
-    profiles = load_profiles()
+    try:
+        profiles = load_profiles()
+    except (OSError, ValueError) as exc:
+        print(f"Не удалось загрузить catalog.json: {exc}")
+        return 1
     if "--demo" in sys.argv:
         return 0 if run_demo(profiles) else 1
     _load_local_env()
@@ -213,11 +238,15 @@ def main() -> int:
     logging.basicConfig(level=logging.ERROR)
     try:
         app = build_bot(profiles)
-    except RuntimeError as exc:
-        print(exc)
+    except (RuntimeError, ValueError):
+        print("Проверьте зависимости и токен в .env. Установка зависимостей: setup.bat")
         return 1
-    print("Бот запущен в режиме polling. Остановить: Ctrl+C")
-    app.run_polling()
+    print("Подключаюсь к Telegram. Остановить: Ctrl+C")
+    try:
+        app.run_polling(bootstrap_retries=0)
+    except Exception as exc:
+        print(f"Не удалось запустить бота ({type(exc).__name__}). Проверьте интернет и токен в .env; закройте другие копии бота.")
+        return 1
     return 0
 
 
